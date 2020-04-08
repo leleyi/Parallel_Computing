@@ -1,0 +1,10 @@
+N: 2500--using time 30 ms
+N: 5000--using time 94 ms
+N: 7500--using time 193 ms
+N: 10000--using time 322 ms
+N: 12500--using time 492 ms
+N: 15000--using time 679 ms
+N: 17500--using time 916 ms
+N: 20000--using time 1191 ms
+N: 22500--using time 1476 ms
+N: 25000--using time 1814 ms
