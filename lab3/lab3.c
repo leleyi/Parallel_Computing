@@ -75,7 +75,7 @@ int map(double *arr1, size_t size1, double *arr2, size_t size2) {
     //double start = omp_get_wtime( );
 
     #pragma omp parallel for default(none) shared(size1, arr1) private(i)\
-    schedule(auto) num_threads(threads_num)
+    schedule(runtime) num_threads(threads_num)
     /* Map Stage. Apply  Cubic root after division by e */
     for (i = 0; i < size1; i++) {
         arr1[i] = pow(arr1[i] / exp(1) , 1.0 /3);
@@ -100,7 +100,7 @@ int merge(double *arr1, double *arr2, size_t size2) {
     int i;
     //printf("thread_num %d ", threads_num);
     #pragma omp parallel for default(none) shared(size2, arr1, arr2) \
-    private(i) schedule(auto) num_threads(threads_num)
+    private(i) schedule(runtime) num_threads(threads_num)
     for (i = 0; i < size2; i++) {
         arr2[i] = pow(arr1[i], arr2[i]);
     }
@@ -121,7 +121,7 @@ double reduce(double *arr, size_t size) {
         }
     }
 
-    #pragma omp parallel for default(none) shared(size, arr, min, res) private(i) schedule(auto) num_threads(threads_num)
+    #pragma omp parallel for default(none) shared(size, arr, min, res) private(i) schedule(runtime) num_threads(threads_num)
     for (i = 0; i < size; i++) {
         if ((int)(arr[i] / min) % 2 == 0) {
             res += sin(arr[i]);
