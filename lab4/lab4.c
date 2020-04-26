@@ -2,8 +2,9 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <math.h>
-#include <iostream>
+//#include <iostream>
 #include <unistd.h>
+#include <pthread.h>
 //Ensure forward compatibility of a written parallel program
 #ifdef _OPENMP
 #include <omp.h>
@@ -44,6 +45,11 @@ void omp_set_nested(int nests){
 #define DEFAULT_M 1
 #define THREADS 1
 
+struct thread_time_args {
+    int max_iterations;
+    int* iteration;
+};
+
 double* fill_array(double *arr, size_t size, unsigned int min, unsigned int max,unsigned int seed);
 
 int map(double *arr1, size_t size1, double *arr2, size_t size2);
@@ -52,6 +58,7 @@ int merge(double *arr1, double *arr2, size_t size2);
 int insert_sort(double *arr, size_t from, size_t to);
 void sort(double **array, size_t size);
 void compare_time(double time_begin, double time_end, double* min_time);
+void * time_thread(void * arg);
 int threads_num;
 
 
@@ -81,8 +88,15 @@ int main(int argc, char* argv[]) {
            minimal_sort_time = -1.0,
            minimal_reduce_time = -1.0;
 
-    int i, iter = 5;
+    int i, iter = 10;
     omp_set_nested(1);
+    pthread_t thread;
+
+    struct thread_time_args thread_time_args;
+    thread_time_args.max_iterations = iter;
+    thread_time_args.iteration = &i;
+
+    pthread_create(&thread, NULL, time_thread, (void*)&thread_time_args);
     #pragma omp parallel shared(i, iter)
     #pragma omp sections
     {
@@ -125,6 +139,7 @@ int main(int argc, char* argv[]) {
     }
         free(m1);
         free(m2);
+        pthread_join(thread, NULL);
         printf("time: %f ms; N = %zu; X = %f ; threads: %d; generate: %f ms; map: %f ms; merge: %f ms; sort: %f ms; reduce: %f ms\n",
                 minimal_time_ms,
                 N,
@@ -136,9 +151,22 @@ int main(int argc, char* argv[]) {
                 minimal_sort_time,
                 minimal_reduce_time);
         return 0;
-
 }
 
+void *time_thread(void *arg){
+
+    struct thread_time_args * thread_time_args = arg;
+    printf("Task is competed for : \n0 %%");
+
+    while(*thread_time_args->iteration < thread_time_args->max_iterations){
+        printf("%c[2K\r%2.0f %%", 27,
+            (thread_time_args->max_iterations / 100.0) * (*thread_time_args->iteration+1) * 100.0);
+
+        fflush(stdout);
+        usleep(1000);
+    }
+    printf("\n");
+}
 double* fill_array(double *arr, size_t size, unsigned int min, unsigned int max,unsigned int seed) {
     int i;
     unsigned tmp_seed;
